@@ -1,0 +1,25 @@
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.github-link {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.github-icon {
+  padding-right: 5px;
+}
+
+.github-icon:before {
+  content: "\f09b";
+  font-family: 'FontAwesome';
+}

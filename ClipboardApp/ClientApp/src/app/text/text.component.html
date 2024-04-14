@@ -1,0 +1,15 @@
+<div id="container">
+  <mat-form-field>
+    <mat-label>Text Area</mat-label>
+    <textarea matInput id="textarea" [(ngModel)]="text" (input)="onTextChange()"></textarea>
+  </mat-form-field>
+
+  <div id="button-container">
+    <button mat-raised-button class="button" (click)="saveText()" *ngIf="!isWebSocketConnected">Save</button>
+    <button mat-raised-button class="button" (click)="clearText()" *ngIf="!isWebSocketConnected">Clear</button>
+    <button mat-raised-button class="button" (click)="loadText()" *ngIf="!isWebSocketConnected"> Refresh</button>
+    <button mat-raised-button class="button" (click)="copyText()">Copy to Clipboard</button>
+  </div>
+</div>
+
+<footer></footer>

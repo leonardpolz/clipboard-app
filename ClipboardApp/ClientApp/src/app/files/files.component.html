@@ -1,0 +1,9 @@
+<div id="container">
+  <h3> Current File: {{ currentFileName }}</h3>
+  <div id="button-container">
+    <button mat-raised-button class="button" (click)="downloadFile()">Download File</button>
+    <button mat-raised-button class="button" (click)="fileInput.click()">Upload File</button>
+    <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" />
+  </div>
+  <div id="drop-zone" (drop)="onDrop($event)" (dragover)="onDragOver($event)">Drop File Here</div>
+</div>

@@ -1,0 +1,28 @@
+<div class="clipboard-container">
+  <input class="clipboard-input"
+         id="clipboard-example-textarea"
+         [(ngModel)]="sessionUrl"
+         readonly>
+  <button class="clipboard-btn"
+          (click)="copyToClipboard()"
+          aria-label="Copy to clipboard"
+          mat-icon-button>
+    <mat-icon>{{ copied ? 'check' : 'content_copy' }}</mat-icon>
+  </button>
+</div>
+
+<nav mat-tab-nav-bar [tabPanel]="tabPanel">
+  <a
+    mat-tab-link
+    *ngFor="let link of links"
+    [routerLink]="link.route"
+    (click)="activeLink = link.route"
+    [active]="activeLink == link.route"
+  >
+    {{ link.label }}
+  </a>
+</nav>
+
+<mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+<router-outlet></router-outlet>
+<div class="placeholder"></div>

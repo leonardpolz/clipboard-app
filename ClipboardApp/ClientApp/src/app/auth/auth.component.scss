@@ -1,0 +1,37 @@
+button {
+  height: 50px !important;
+  width: 100%;
+}
+
+#login-button {
+  margin-right: 5%;
+}
+
+#guest-login-button {
+  margin-top: 1%;
+  width: 50%;
+  display: block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+mat-form-field {
+  display: block;
+}
+
+mat-card {
+  width: 50%;
+  margin-top: 10%;
+}
+
+#main-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+}
+

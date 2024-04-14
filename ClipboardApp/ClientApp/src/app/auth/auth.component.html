@@ -1,0 +1,40 @@
+<div id="main-div">
+  <mat-card>
+    <mat-card-header>
+      <h1>Login</h1>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-form-field>
+        <mat-label>Mail</mat-label>
+        <input matInput [(ngModel)]="email" type="email">
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Password</mat-label>
+        <input matInput [(ngModel)]="password" type="password">
+      </mat-form-field>
+
+      <mat-card-actions>
+        <button
+          id="login-button"
+          mat-raised-button color="primary"
+        >Login</button>
+
+        <button
+          id="sign-up"
+          mat-raised-button color="primary"
+          disabled = "true"
+        >Sign-up</button>
+
+      </mat-card-actions>
+    </mat-card-content>
+  </mat-card>
+
+
+  <button
+    id="guest-login-button"
+    mat-stroked-button color="primary"
+    (click)="guestLogin()"
+  >Continue as Guest!</button>
+</div>

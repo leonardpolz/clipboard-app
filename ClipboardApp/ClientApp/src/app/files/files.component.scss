@@ -1,0 +1,35 @@
+#textarea {
+    width: 100%;
+    height: 250px;
+}
+
+#drop-zone {
+    display: flex;
+    border-style: dotted;
+    border-width: 1px;
+    align-items: center;
+    justify-content: center;
+
+    height: 150px;
+}
+
+#drop-zone:hover {
+    background-color: lightgray;
+}
+
+#container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 50px;
+}
+
+#button-container {
+  display: flex;
+  margin-bottom: 30px;
+}
+
+.button {
+  margin-right: 15px;
+  width: 100%;
+  height: 60px;
+}

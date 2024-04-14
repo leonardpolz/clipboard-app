@@ -1,0 +1,12 @@
+<header>
+  <mat-toolbar color="primary">
+    <span id="title" [routerLink]="['/']">Clipboard App</span>
+    <button
+      id="authButton"
+      mat-button
+      (click)="isLoggedIn() ? logoutUser() : loginUser()"
+    >
+      {{ isLoggedIn() ? 'Logout' : 'Login' }}
+    </button>
+  </mat-toolbar>
+</header>
