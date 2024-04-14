@@ -61,10 +61,7 @@
     </PropertyGroup>
 
     <Target Name="NSwag" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' ">
-        <Exec WorkingDirectory="$(ProjectDir)" 
-              Command="$(NSwagExe_Net70) run nswag.json /variables:Configuration=$(Configuration)"
-              EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development;JWT_SECRET=placeholder;AZURE_CLIENT_SECRET=placeholder"
-        />
+        <Exec WorkingDirectory="$(ProjectDir)" Command="$(NSwagExe_Net70) run nswag.json /variables:Configuration=$(Configuration)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development;JWT_SECRET=placeholder;AZURE_CLIENT_SECRET=placeholder" />
     </Target>
 
     <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
