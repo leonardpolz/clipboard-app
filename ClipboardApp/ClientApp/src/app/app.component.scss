@@ -1,4 +1,6 @@
 footer {
+  display: flex;
+  justify-content: center;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -7,6 +9,12 @@ footer {
   color: white;
   text-align: center;
   padding: 10px 0;
+}
+
+.footer-container {
+  position: absolute;
+  left: 0;
+  margin-left: 20px;
 }
 
 .github-link {
