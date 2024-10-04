@@ -1,6 +1,6 @@
 using AutoMapper;
-using ClipboardApp.Data.Models;
 using ClipboardApp.Handlers;
+using ClipboardApp.Models;
 
 namespace ClipboardApp.AutoMapper;
 

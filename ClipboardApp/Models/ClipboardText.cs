@@ -1,4 +1,4 @@
-namespace ClipboardApp.Data.Models;
+namespace ClipboardApp.Models;
 
 public class ClipboardText
 {

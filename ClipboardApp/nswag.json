@@ -1,5 +1,5 @@
 {
-    "runtime": "Net70",
+    "runtime": "Net80",
     "defaultVariables": null,
     "documentGenerator": {
       "aspNetCoreToOpenApi": {
@@ -30,7 +30,7 @@
         "serviceHost": null,
         "serviceBasePath": null,
         "serviceSchemes": [],
-        "infoTitle": "Sesam Dashboard",
+        "infoTitle": "Clipboard App",
         "infoDescription": null,
         "infoVersion": "1.0.0",
         "documentTemplate": null,

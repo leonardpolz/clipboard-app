@@ -2,8 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClipboardApp", "ClipboardApp\ClipboardApp.csproj", "{9CB34359-538A-4625-830B-A6CCDE858125}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClipboardApp.Data", "ClipboardApp.Data\ClipboardApp.Data.csproj", "{A4F94275-3BEF-42FD-8E36-546D4ABA5225}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,9 +12,5 @@ Global
 		{9CB34359-538A-4625-830B-A6CCDE858125}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CB34359-538A-4625-830B-A6CCDE858125}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CB34359-538A-4625-830B-A6CCDE858125}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4F94275-3BEF-42FD-8E36-546D4ABA5225}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4F94275-3BEF-42FD-8E36-546D4ABA5225}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4F94275-3BEF-42FD-8E36-546D4ABA5225}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4F94275-3BEF-42FD-8E36-546D4ABA5225}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
