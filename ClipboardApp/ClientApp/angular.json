@@ -134,5 +134,8 @@
       }
     }
   },
-  "defaultProject": "ClipboardApp"
+  "defaultProject": "ClipboardApp",
+  "cli": {
+    "analytics": "be707662-f385-4702-8345-367f9f649121"
+  }
 }

@@ -1,8 +1,4 @@
-using AutoMapper;
-using ClipboardApp.Data;
 using ClipboardApp.Shared.TextStorage;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClipboardApp.Handlers;
 

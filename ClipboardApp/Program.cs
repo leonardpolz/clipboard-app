@@ -1,6 +1,5 @@
 using System.Text;
 using ClipboardApp.AutoMapper;
-using ClipboardApp.Data;
 using ClipboardApp.Handlers;
 using ClipboardApp.Shared.Authentication;
 using ClipboardApp.Shared.BinaryFileClient;
@@ -14,9 +13,8 @@ Console.WriteLine("Environment: " + Environment.GetEnvironmentVariable("ASPNETCO
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddWebSockets(options => { });
+builder.Services.AddWebSockets(_ => { });
 
-builder.Services.AddServices("ClipboardAppDb");
 builder.Services.AddAutoMapper(typeof(ClipboardProfile));
 
 builder.Services.AddSingleton<TextStorage>();

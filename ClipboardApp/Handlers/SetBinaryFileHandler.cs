@@ -1,7 +1,4 @@
-using ClipboardApp.Data;
-using ClipboardApp.Data.Models;
 using ClipboardApp.Shared.BinaryFileClient;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClipboardApp.Handlers;
 
