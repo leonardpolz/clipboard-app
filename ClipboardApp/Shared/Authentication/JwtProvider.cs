@@ -6,13 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ClipboardApp.Shared.Authentication;
 
-public class JwtProvider : IJwtProvider
+public class JwtProvider(IOptions<JwtOptions> jwtOptions) : IJwtProvider
 {
-    private readonly JwtOptions _options;
-    public JwtProvider(IOptions<JwtOptions> jwtOptions)
-    {
-        this._options = jwtOptions.Value;
-    }
+    private readonly JwtOptions _options = jwtOptions.Value;
 
     public string Generate(string sessionId, int lifetimeHours)
     {
@@ -23,7 +19,7 @@ public class JwtProvider : IJwtProvider
 
         var claims = new ClaimsIdentity(new[]
         {
-            new Claim("sessionId", sessionId.ToString())
+            new Claim("sessionId", sessionId)
         });
 
         var token = new JwtSecurityToken(

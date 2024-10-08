@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SetTextClipboardHandlerDto, TextClient } from '../shared/services/backend.client';
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
@@ -9,6 +8,9 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { WsTextClient } from '../shared/services/text-ws.client';
 import { AuthService } from '../shared/services/auth-service/auth.service';
+import {SetTextClipboardHandlerRequestDto, TextClient} from "../shared/services/backend.client";
+import {MatIcon} from "@angular/material/icon";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 @Component({
   standalone: true,
@@ -19,7 +21,9 @@ import { AuthService } from '../shared/services/auth-service/auth.service';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatIcon,
+    MatProgressSpinner
   ],
   selector: 'app-text',
   templateUrl: './text.component.html',
@@ -70,7 +74,7 @@ export class TextComponent implements OnInit, OnDestroy {
   }
 
   public saveText() {
-    let dto: SetTextClipboardHandlerDto = { text: this.text };
+    let dto: SetTextClipboardHandlerRequestDto = { text: this.text };
     this._textClient.patchTextClipboard(dto).subscribe();
     this.openSnackBar('Successfully saved!', 'dismiss')
   }

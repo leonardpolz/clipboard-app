@@ -1,22 +1,16 @@
 using ClipboardApp.Handlers;
+using ClipboardApp.Handlers.AuthGuestHandler;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClipboardApp.Controllers;
 
-[Route("api/auth/guest")]
+[Route("api/v1/auth/guest")]
 [ApiController]
-public class AuthGuestController : ControllerBase
+public class AuthGuestController(IAuthGuestHandler authGuestHandler) : ControllerBase
 {
-    private readonly IAuthGuestHandler _authGuestHandler;
-    
-    public AuthGuestController(IAuthGuestHandler authGuestHandler)
-    {
-        _authGuestHandler = authGuestHandler;
-    }
-
     [HttpPost]
     public async Task<IActionResult> AuthenticateAsync(string? sessionId)
     {
-        return await _authGuestHandler.HandleAsync(sessionId);
+        return Ok(await authGuestHandler.HandleAsync(sessionId));
     }
 }

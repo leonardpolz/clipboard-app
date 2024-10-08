@@ -1,73 +1,72 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using ClipboardApp.Handlers;
+using ClipboardApp.Handlers.GetBlobDownloadContextHandler;
+using ClipboardApp.Handlers.GetBlobUploadContextHandler;
+using ClipboardApp.Handlers.GetWsFileNameHandler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClipboardApp.Controllers;
 
 [ApiController]
-[Route("/api/binary-file")]
-public class BinaryFileController : ControllerBase
+[Route("/api/v1/binary-file")]
+public class BinaryFileController(
+    IWsGetFileNameHandler wsGetFileNameHandler,
+    IGetBlobDownloadContextHandler getBlobDownloadContextHandler,
+    IGetBlobUploadContextHandler getBlobUploadContextHandler
+) : ControllerBase
 {
-   private readonly IGetBinaryFileHandler _getBinaryFileHandler;
-   private readonly ISetBinaryFileHandler _setBinaryFileHandler;
-   private readonly IWsGetFileNameHandler _wsGetFileNameHandler;
+    [Authorize]
+    [HttpGet]
+    [Route("blob-upload-context")]
+    public async Task<GetBlobUploadContextHandlerDto> GetBlobUploadContext([FromQuery] string encodedFileName)
+    {
+        var decodedFileName = WebUtility.UrlDecode(encodedFileName);
+        var sessionId = User.Claims.First(c => c.Type == "sessionId").Value;
 
-   public BinaryFileController(IGetBinaryFileHandler getBinaryFileHandler, ISetBinaryFileHandler setBinaryFileHandler, IWsGetFileNameHandler wsGetFileNameHandler)
-   {
-      _getBinaryFileHandler = getBinaryFileHandler;
-      _setBinaryFileHandler = setBinaryFileHandler;
-      _wsGetFileNameHandler = wsGetFileNameHandler;
-   }
-   
-   [HttpGet]
-   public async Task<IActionResult> GetBinaryFile()
-   {
-      var sessionId = User.Claims.FirstOrDefault(c => c.Type == "sessionId")?.Value;
-      if (sessionId == null) return Unauthorized("SessionId not found");
-      var file = await _getBinaryFileHandler.HandleAsync(sessionId);
+        return await getBlobUploadContextHandler.HandleAsync(sessionId, decodedFileName);
+    }
 
-      if (file.Data == null) return NotFound();
+    [Authorize]
+    [HttpGet]
+    [Route("blob-download-context")]
+    public async Task<GetBlobDownloadContextHandlerDto> GetBlobDownloadContext()
+    {
+        var sessionId = User.Claims.First(c => c.Type == "sessionId").Value;
 
-      return File(file.Data, file.ContentType, file.FileName);
-   }
+        return await getBlobDownloadContextHandler.HandleAsync(sessionId);
+    }
 
-   [HttpPatch]
-   public async Task<IActionResult> PatchBinaryFile([FromForm] IFormFile file)
-   {
-      using var memoryStream = new MemoryStream();
-      await file.CopyToAsync(memoryStream);
-
-      var dto = new SetBinaryFileHandlerDto()
-      {
-         Data = memoryStream.ToArray(),
-         ContentType = file.ContentType,
-         FileName = file.FileName
-      };
-
-      var sessionId = User.Claims.FirstOrDefault(c => c.Type == "sessionId")?.Value;
-      if (sessionId == null) return Unauthorized("SessionId not found");
-      await _setBinaryFileHandler.HandleAsync(dto, sessionId);
-
-      return Ok(new { file.FileName });
-   }
-   
     [Route("/ws/file")]
     public async Task HandleWebSocketConnection(string token)
     {
-       if (!HttpContext.WebSockets.IsWebSocketRequest)
-       {
-          HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-          return;
-       }
-       
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
-        
-        if (jwtToken == null) HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-        
-        var sessionId = jwtToken.Claims.First(c => c.Type == "sessionId").Value;
+        if (!HttpContext.WebSockets.IsWebSocketRequest)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await HttpContext.Response.WriteAsync("Bad Request: The request is not a valid WebSocket request.");
+            return;
+        }
 
-       var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-       await _wsGetFileNameHandler.HandleAsync(webSocket, sessionId);
-    } 
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        if (tokenHandler.ReadToken(token) is not JwtSecurityToken jwtToken)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await HttpContext.Response.WriteAsync("Unauthorized: The token is invalid.");
+            return;
+        }
+
+        var sessionId = jwtToken.Claims.FirstOrDefault(c => c.Type == "sessionId")?.Value;
+
+        if (sessionId == null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await HttpContext.Response.WriteAsync("Bad Request: The token does not contain a sessionId claim.");
+            return;
+        }
+
+        var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+        await wsGetFileNameHandler.HandleAsync(webSocket, sessionId);
+    }
 }

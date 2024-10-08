@@ -1,6 +1,6 @@
 using System.Net.WebSockets;
 
-namespace ClipboardApp.Handlers;
+namespace ClipboardApp.Handlers.GetWsTextHandler;
 
 public interface IWsGetTextHandler
 {

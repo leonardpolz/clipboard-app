@@ -27,7 +27,7 @@ export class AuthGuestClient {
     }
 
     authenticate(sessionId: string | null | undefined): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/auth/guest?";
+        let url_ = this.baseUrl + "/api/v1/auth/guest?";
         if (sessionId !== undefined && sessionId !== null)
             url_ += "sessionId=" + encodeURIComponent("" + sessionId) + "&";
         url_ = url_.replace(/[?&]$/, "");
@@ -92,125 +92,102 @@ export class BinaryFileClient {
         this.baseUrl = baseUrl ?? "";
     }
 
-    getBinaryFile(): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/binary-file";
+    getBlobUploadContext(encodedFileName: string | undefined): Observable<GetBlobUploadContextHandlerDto> {
+        let url_ = this.baseUrl + "/api/v1/binary-file/blob-upload-context?";
+        if (encodedFileName === null)
+            throw new Error("The parameter 'encodedFileName' cannot be null.");
+        else if (encodedFileName !== undefined)
+            url_ += "encodedFileName=" + encodeURIComponent("" + encodedFileName) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Accept": "application/octet-stream"
+                "Accept": "application/json"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetBinaryFile(response_);
+            return this.processGetBlobUploadContext(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetBinaryFile(response_ as any);
+                    return this.processGetBlobUploadContext(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<FileResponse>;
+                    return _observableThrow(e) as any as Observable<GetBlobUploadContextHandlerDto>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<FileResponse>;
+                return _observableThrow(response_) as any as Observable<GetBlobUploadContextHandlerDto>;
         }));
     }
 
-    protected processGetBinaryFile(response: HttpResponseBase): Observable<FileResponse> {
+    protected processGetBlobUploadContext(response: HttpResponseBase): Observable<GetBlobUploadContextHandlerDto> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (response as any).error instanceof Blob ? (response as any).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as GetBlobUploadContextHandlerDto;
+            return _observableOf(result200);
+            }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse>(null as any);
+        return _observableOf<GetBlobUploadContextHandlerDto>(null as any);
     }
 
-    patchBinaryFile(contentType: string | null | undefined, contentDisposition: string | null | undefined, headers: any[] | null | undefined, length: number | undefined, name: string | null | undefined, fileName: string | null | undefined): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/binary-file";
+    getBlobDownloadContext(): Observable<GetBlobDownloadContextHandlerDto> {
+        let url_ = this.baseUrl + "/api/v1/binary-file/blob-download-context";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = new FormData();
-        if (contentType !== null && contentType !== undefined)
-            content_.append("ContentType", contentType.toString());
-        if (contentDisposition !== null && contentDisposition !== undefined)
-            content_.append("ContentDisposition", contentDisposition.toString());
-        if (headers !== null && headers !== undefined)
-            headers.forEach(item_ => content_.append("Headers", item_.toString()));
-        if (length === null || length === undefined)
-            throw new Error("The parameter 'length' cannot be null.");
-        else
-            content_.append("Length", length.toString());
-        if (name !== null && name !== undefined)
-            content_.append("Name", name.toString());
-        if (fileName !== null && fileName !== undefined)
-            content_.append("FileName", fileName.toString());
-
         let options_ : any = {
-            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Accept": "application/octet-stream"
+                "Accept": "application/json"
             })
         };
 
-        return this.http.request("patch", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processPatchBinaryFile(response_);
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetBlobDownloadContext(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPatchBinaryFile(response_ as any);
+                    return this.processGetBlobDownloadContext(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<FileResponse>;
+                    return _observableThrow(e) as any as Observable<GetBlobDownloadContextHandlerDto>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<FileResponse>;
+                return _observableThrow(response_) as any as Observable<GetBlobDownloadContextHandlerDto>;
         }));
     }
 
-    protected processPatchBinaryFile(response: HttpResponseBase): Observable<FileResponse> {
+    protected processGetBlobDownloadContext(response: HttpResponseBase): Observable<GetBlobDownloadContextHandlerDto> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (response as any).error instanceof Blob ? (response as any).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as GetBlobDownloadContextHandlerDto;
+            return _observableOf(result200);
+            }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse>(null as any);
+        return _observableOf<GetBlobDownloadContextHandlerDto>(null as any);
     }
 
     handleWebSocketConnection(token: string | undefined): Observable<void> {
@@ -274,7 +251,7 @@ export class TextClient {
     }
 
     getTextClipboard(): Observable<GetTextHandlerDto> {
-        let url_ = this.baseUrl + "/api/text";
+        let url_ = this.baseUrl + "/api/v1/text";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -320,11 +297,11 @@ export class TextClient {
         return _observableOf<GetTextHandlerDto>(null as any);
     }
 
-    patchTextClipboard(dto: SetTextClipboardHandlerDto): Observable<void> {
-        let url_ = this.baseUrl + "/api/text";
+    patchTextClipboard(requestDto: SetTextClipboardHandlerRequestDto): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/text";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(dto);
+        const content_ = JSON.stringify(requestDto);
 
         let options_ : any = {
             body: content_,
@@ -417,11 +394,20 @@ export class TextClient {
     }
 }
 
+export interface GetBlobUploadContextHandlerDto {
+    sasUri?: string;
+}
+
+export interface GetBlobDownloadContextHandlerDto {
+    sasUri?: string;
+    originalFileName?: string;
+}
+
 export interface GetTextHandlerDto {
     text?: string;
 }
 
-export interface SetTextClipboardHandlerDto {
+export interface SetTextClipboardHandlerRequestDto {
     text?: string;
 }
 

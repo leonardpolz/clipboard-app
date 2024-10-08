@@ -6,4 +6,5 @@
     <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" />
   </div>
   <div id="drop-zone" (drop)="onDrop($event)" (dragover)="onDragOver($event)">Drop File Here</div>
+  <mat-progress-bar mode="indeterminate" id="progress-bar" *ngIf="isLoading"></mat-progress-bar>
 </div>

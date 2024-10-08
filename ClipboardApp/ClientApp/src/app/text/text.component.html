@@ -1,4 +1,12 @@
 <div id="container">
+  <div id="websocket-status" class="status-indicator">
+    <mat-icon *ngIf="isWebSocketConnected" class="green-checkmark">check_circle</mat-icon>
+    <span *ngIf="isWebSocketConnected">WebSocket connection established</span>
+
+    <mat-spinner id="ws-spinner" diameter="22" *ngIf="!isWebSocketConnected"></mat-spinner>
+    <span *ngIf="!isWebSocketConnected">Establishing WebSocket connection</span>
+  </div>
+
   <mat-form-field>
     <mat-label>Text Area</mat-label>
     <textarea matInput id="textarea" [(ngModel)]="text" (input)="onTextChange()"></textarea>
@@ -11,5 +19,3 @@
     <button mat-raised-button class="button" (click)="copyText()">Copy to Clipboard</button>
   </div>
 </div>
-
-<footer></footer>

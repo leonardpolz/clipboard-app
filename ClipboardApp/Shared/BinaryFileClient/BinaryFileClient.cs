@@ -1,67 +1,84 @@
 using Azure.Core;
 using Azure.Identity;
+using Azure.Storage;
 using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 using Microsoft.Extensions.Options;
+using Uri = System.Uri;
 
 namespace ClipboardApp.Shared.BinaryFileClient;
 
-public class BinaryFileClient: IBinaryFileClient
+public class BinaryFileClient : IBinaryFileClient
 {
-    private readonly BlobContainerClient _containerClient;
+    private BlobContainerClient? _containerClient;
+    private BlobContainerClient? _sasContainerClient;
+    private readonly int _sasLifeTimeInMinutes;
+    private readonly BinaryFileClientOptions _clientOptions;
 
     public BinaryFileClient(IOptions<BinaryFileClientOptions> options)
     {
-        var clientOptions = options.Value;
+        _clientOptions = options.Value;
+        _sasLifeTimeInMinutes = _clientOptions.SasLifeTimeInMinutes;
+
+        _ = InitBlobClientAsync();
+        _ = InitSasClient();
+    }
+
+    private async Task InitBlobClientAsync()
+    {
         TokenCredential credential;
 
-        if (string.IsNullOrEmpty(clientOptions.ClientId) || string.IsNullOrEmpty(options.Value.ClientSecret))
+        if (string.IsNullOrEmpty(_clientOptions.ClientId) || string.IsNullOrEmpty(_clientOptions.ClientSecret))
         {
             credential = new ManagedIdentityCredential();
         }
         else
         {
-            credential = new ClientSecretCredential(clientOptions.TenantId, clientOptions.ClientId, clientOptions.ClientSecret);
+            credential = new ClientSecretCredential(_clientOptions.TenantId, _clientOptions.ClientId,
+                _clientOptions.ClientSecret);
         }
-        
-        var blobServiceClient = new BlobServiceClient(new Uri(clientOptions.StorageAccountUrl), credential);
-        _containerClient = blobServiceClient.GetBlobContainerClient(clientOptions.ContainerName);
-        _containerClient.CreateIfNotExists();
+
+        var blobServiceClient = new BlobServiceClient(new Uri(_clientOptions.StorageAccountUrl), credential);
+        _containerClient = blobServiceClient.GetBlobContainerClient(_clientOptions.ContainerName);
+        await _containerClient.CreateIfNotExistsAsync();
     }
-    
-    public async Task UploadAsync(string fileName, byte[] data, string metaFileName)
+
+    private async Task InitSasClient()
     {
-        var blobClient = _containerClient.GetBlobClient(fileName);
-        await blobClient.UploadAsync(new MemoryStream(data), overwrite: true);
-        var metadata = new Dictionary<string, string>
-        {
-            { "metaFileName", metaFileName }
-        };
-        await blobClient.SetMetadataAsync(metadata);
+        var sasCredential =
+            new StorageSharedKeyCredential(_clientOptions.StorageAccountName, _clientOptions.StorageAccountKey);
+        var sasBlobServiceClient = new BlobServiceClient(new Uri(_clientOptions.StorageAccountUrl), sasCredential);
+        _sasContainerClient = sasBlobServiceClient.GetBlobContainerClient(_clientOptions.ContainerName);
+        await _sasContainerClient.CreateIfNotExistsAsync();
     }
- 
-    public async Task<BlobResult> DownloadAsync(string fileName)
-    {
-        var blobClient = _containerClient.GetBlobClient(fileName);
-        var response = await blobClient.DownloadAsync();
-        await using var memoryStream = new MemoryStream();
-        await response.Value.Content.CopyToAsync(memoryStream);
 
-        var properties = await blobClient.GetPropertiesAsync();
-        var metadata = properties.Value.Metadata;
-
-        metadata.TryGetValue("metaFileName", out var metaFileName);
-
-        return new BlobResult
-        {
-            FileName = metaFileName ?? string.Empty,
-            Data = memoryStream.ToArray(),
-            ContentType = properties.Value.ContentType ?? string.Empty
-        };
-    }
-    
     public async Task DeleteAsync(string fileName)
     {
-        var blobClient = _containerClient.GetBlobClient(fileName);
+        var blobClient = _containerClient!.GetBlobClient(fileName);
         await blobClient.DeleteIfExistsAsync();
+    }
+
+    public async Task<Uri> GenerateSasUri(string fileName, BlobSasPermissions permission)
+    {
+        var blobClient = _sasContainerClient!.GetBlobClient(fileName);
+
+        if (!blobClient.CanGenerateSasUri)
+        {
+            throw new InvalidOperationException("Blob client cannot generate SAS URI");
+        }
+
+        var expiresOn = DateTimeOffset.UtcNow.AddMinutes(this._sasLifeTimeInMinutes);
+
+        var sasBuilder = new BlobSasBuilder
+        {
+            BlobContainerName = _containerClient!.Name,
+            BlobName = fileName,
+            Resource = "b",
+            ExpiresOn = expiresOn
+        };
+
+        sasBuilder.SetPermissions(permission);
+
+        return blobClient.GenerateSasUri(sasBuilder);
     }
 }

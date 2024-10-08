@@ -7,4 +7,9 @@ public class BinaryFileClientOptions
     public string? TenantId { get; init; }
     public string? ClientId { get; init; }
     public string? ClientSecret { get; set; }
+    
+    public required int SasLifeTimeInMinutes { get; init; }
+    
+    public required string StorageAccountName { get; init; }
+    public required string? StorageAccountKey { get; set; }
 }

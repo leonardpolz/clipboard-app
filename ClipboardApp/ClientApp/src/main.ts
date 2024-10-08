@@ -10,7 +10,6 @@ import { API_BASE_URL, AuthGuestClient, BinaryFileClient, TextClient } from './a
 import { AuthService } from './app/shared/services/auth-service/auth.service';
 import { TokenInterceptorInterceptor } from './app/shared/interceptors/token-interceptor/token-interceptor.interceptor';
 import { WsTextClient } from './app/shared/services/text-ws.client';
-import { BinaryFileClientCustom } from './app/shared/services/upload-file.client';
 import { WsFileNameClient } from './app/shared/services/fileName-ws-client';
 
 export function getBaseUrl() {
@@ -37,10 +36,10 @@ const providers = [
   },
   TextClient,
   WsTextClient,
-  BinaryFileClientCustom,
   AuthGuestClient,
   AuthService,
   WsFileNameClient,
+  BinaryFileClient,
   importProvidersFrom(imports)
 ];
 

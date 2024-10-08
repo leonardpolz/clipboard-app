@@ -17,3 +17,23 @@
 .button {
   margin-right: 15px;
 }
+
+#websocket-status {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.green-checkmark {
+  color: green !important;
+  vertical-align: middle;
+}
+
+.status-indicator mat-icon {
+  margin-right: 10px;
+  font-size: 24px;
+}
+
+#ws-spinner {
+  margin-right: 10px;
+}

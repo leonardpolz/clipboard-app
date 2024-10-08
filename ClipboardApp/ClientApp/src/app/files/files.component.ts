@@ -1,12 +1,12 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { saveAs } from 'file-saver';
-import { MatButtonModule } from "@angular/material/button";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { BinaryFileClientCustom } from '../shared/services/upload-file.client';
-import { AuthService } from '../shared/services/auth-service/auth.service';
-import { WsFileNameClient } from '../shared/services/fileName-ws-client';
+import {CommonModule} from '@angular/common';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {MatButtonModule} from "@angular/material/button";
+import {MatSnackBar, MatSnackBarModule} from "@angular/material/snack-bar";
+import {AuthService} from '../shared/services/auth-service/auth.service';
+import {WsFileNameClient} from '../shared/services/fileName-ws-client';
+import {BinaryFileClient} from "../shared/services/backend.client";
+import {MatProgressBar} from "@angular/material/progress-bar";
 
 @Component({
   standalone: true,
@@ -14,7 +14,8 @@ import { WsFileNameClient } from '../shared/services/fileName-ws-client';
     CommonModule,
     FormsModule,
     MatButtonModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatProgressBar
   ],
   selector: 'app-files',
   templateUrl: './files.component.html',
@@ -22,13 +23,15 @@ import { WsFileNameClient } from '../shared/services/fileName-ws-client';
 })
 export class FilesComponent implements OnInit, OnDestroy {
   currentFileName: string = "-";
+  isLoading: boolean = false;
 
   constructor(
-    private _binaryFileClient: BinaryFileClientCustom,
+    private _binaryFileClient: BinaryFileClient,
     private _snackBar: MatSnackBar,
     private _authService: AuthService,
     private _wsFileNameClient: WsFileNameClient
-  ) { }
+  ) {
+  }
 
   ngOnInit(): void {
     this.loadTextAsyc();
@@ -49,18 +52,39 @@ export class FilesComponent implements OnInit, OnDestroy {
     });
   }
 
-  public downloadFile() {
-    this._binaryFileClient.getBinaryFile().subscribe(response => {
-      if (response.status === 200 && response.data) {
-        const blob = new Blob([response.data], { type: 'application/octet-stream' });
-        const fileName = response.headers!['content-disposition'].split(';')[1].split('=')[1].replace(/"/g, '');
-        console.log(fileName)
-        saveAs(blob, fileName);
-        this.openSnackBar('Successfully download file!', 'dismiss');
-      } else {
+  private downloadBlob(sasUri: string, fileName: string) {
+    fetch(sasUri)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(error => {
+        console.error('Download failed:', error);
         this.openSnackBar('Failed to download file!', 'dismiss');
+        this.isLoading = false;
+      });
+  }
+
+  public downloadFile() {
+
+    this._binaryFileClient.getBlobDownloadContext().subscribe(
+      response => {
+        this.isLoading = true;
+        this.downloadBlob(response.sasUri!, response.originalFileName!);
+        this.isLoading = false;
+      },
+      error => {
+        this.openSnackBar('Failed to download file!', 'dismiss');
+        this.isLoading = false;
       }
-    });
+    )
   }
 
   public onFileSelected(event: Event): void {
@@ -90,18 +114,43 @@ export class FilesComponent implements OnInit, OnDestroy {
     event.preventDefault();
   }
 
-  public uploadFile(file: File) {
-    let headers = [{
-      'ContentType': [file.type],
-    }];
+  private uploadBlob(sasUri: string, file: File) {
+    fetch(sasUri, {
+      method: 'PUT',
+      headers: {
+        'x-ms-blob-type': 'BlockBlob',
+        'Content-Type': file.type,
+        'x-ms-meta-name': file.name
+      },
+      body: file
+    })
+      .then(response => {
+        if (!response.ok) {
+          this.openSnackBar('Failed to upload file to storage account!', 'dismiss');
+          this.isLoading = false;
+        }
+      })
+      .catch(error => {
+        this.openSnackBar('Failed to upload file to storage account!', 'dismiss');
+        this.isLoading = false;
+      });
+  }
 
-    this._binaryFileClient.patchBinaryFile(file, file.type, null, headers, file.size, file.name, file.name).subscribe(response => {
-      if (response.status === 200 || response.status === 206) {
-        this.openSnackBar(`Successfully uploaded "${file.name}"`, 'dismiss')
-      } else {
-        this.openSnackBar(`Failed to upload "${file.name}"`, 'dismiss')
+  public uploadFile(file: File) {
+
+    const decodedFileName = encodeURI(file.name);
+
+    this._binaryFileClient.getBlobUploadContext(decodedFileName).subscribe(response => {
+        this.isLoading = true;
+        this.uploadBlob(response.sasUri!, file);
+        this.openSnackBar(`Successfully uploaded "${file.name}"`, 'dismiss');
+        this.isLoading = false;
+      },
+      error => {
+        this.openSnackBar('Failed to upload file!', 'dismiss');
+        this.isLoading = false;
       }
-    });
+    )
   }
 
   private openSnackBar(message: string, action: string) {
