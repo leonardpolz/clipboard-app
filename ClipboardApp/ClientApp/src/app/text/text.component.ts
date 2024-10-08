@@ -85,7 +85,7 @@ export class TextComponent implements OnInit, OnDestroy {
     this.openSnackBar('Successfully cleared!', 'dismiss')
   }
 
-  public copyText() {
+  public copyTextToClipboard() {
     navigator.clipboard.writeText(this.text);
     this.openSnackBar('Copied to clipboard!', 'dismiss')
   }

@@ -25,8 +25,7 @@ import {MatCardModule} from "@angular/material/card";
   styleUrls: ['./auth.component.scss']
 })
 export class AuthComponent implements OnInit{
-  password: string = "";
-  email: string = "";
+  sessionKey: string = "";
 
   constructor(private _authService: AuthService, private _router: Router, private _snackBar: MatSnackBar, private _activatedRoute: ActivatedRoute) {}
 
@@ -61,6 +60,10 @@ export class AuthComponent implements OnInit{
         console.error(error);
         this.openSnackBar("Login Failed", "Dismiss");
       });
+  }
+
+  public joinSession(sessionKey: string) {
+    this._router.navigate([`/${sessionKey}`]);
   }
 
   private openSnackBar(message: string, action: string) {

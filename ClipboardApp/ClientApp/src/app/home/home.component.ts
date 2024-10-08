@@ -35,7 +35,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   sessionUrl: string = "";
-  copied: boolean = false;
+  sessionKey: string = "";
+  copiedUrl: boolean = false;
+  copiedKey: boolean = false;
 
   activeLink: string = null!;
   private routerSubscription: Subscription = null!;
@@ -61,19 +63,34 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.sessionKey = this._authService.getSessionId();
     this.sessionUrl = `${location.origin}/${this._authService.getSessionId()}`;
   }
 
-  copyToClipboard() {
-    this.copied = true;
+  copyToClipboardUrl() {
+
+    this.copiedUrl = true;
     navigator.clipboard.writeText(this.sessionUrl).then(
       () => {
-        // Icon will change for 1500ms then revert back
-        setTimeout(() => this.copied = false, 3000);
+        setTimeout(() => this.copiedUrl = false, 3000);
       },
       (err) => {
         console.error('Failed to copy content: ', err);
-        this.copied = false;
+        this.copiedUrl = false;
+      }
+    );
+  }
+
+  copyToClipboardKey() {
+
+    this.copiedKey = true;
+    navigator.clipboard.writeText(this.sessionKey).then(
+      () => {
+        setTimeout(() => this.copiedKey = false, 3000);
+      },
+      (err) => {
+        console.error('Failed to copy content: ', err);
+        this.copiedKey = false;
       }
     );
   }

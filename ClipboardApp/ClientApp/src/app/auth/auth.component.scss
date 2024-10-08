@@ -1,15 +1,16 @@
 button {
-  height: 50px !important;
+  height: 50px;
   width: 100%;
 }
 
-#login-button {
+#join-button {
   margin-right: 5%;
+  width: 110px;
 }
 
 #guest-login-button {
   margin-top: 1%;
-  width: 50%;
+  width: 40%;
   display: block;
 }
 
@@ -23,8 +24,13 @@ mat-form-field {
 }
 
 mat-card {
-  width: 50%;
+  width: 40%;
   margin-top: 10%;
+}
+
+#Session-Key-Input {
+  width: 100%;
+  height: 55px;
 }
 
 #main-div {
@@ -33,5 +39,11 @@ mat-card {
   align-items: center;
   flex-direction: column;
   height: 100%;
+  margin-top: 10%;
 }
 
+#card {
+  display: flex;
+  align-items: center;
+  align-content: center;
+}
