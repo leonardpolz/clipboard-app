@@ -73,7 +73,6 @@ export class FilesComponent implements OnInit, OnDestroy {
   }
 
   public downloadFile() {
-
     this._binaryFileClient.getBlobDownloadContext().subscribe(
       response => {
         this.isLoading = true;
@@ -126,11 +125,13 @@ export class FilesComponent implements OnInit, OnDestroy {
     })
       .then(response => {
         if (!response.ok) {
+          console.error('Upload failed:', response);
           this.openSnackBar('Failed to upload file to storage account!', 'dismiss');
           this.isLoading = false;
         }
       })
       .catch(error => {
+        console.error('Upload failed:', error);
         this.openSnackBar('Failed to upload file to storage account!', 'dismiss');
         this.isLoading = false;
       });
@@ -138,9 +139,17 @@ export class FilesComponent implements OnInit, OnDestroy {
 
   public uploadFile(file: File) {
 
-    const decodedFileName = encodeURI(file.name);
+    const invalidCharsPattern = /[^\x00-\x7F]/;
 
-    this._binaryFileClient.getBlobUploadContext(decodedFileName).subscribe(response => {
+    if (invalidCharsPattern.test(file.name)) {
+      this.openSnackBar('File name contains invalid characters. Please rename the file and try again.', 'dismiss');
+      return
+    }
+
+    const encodedFileName = encodeURIComponent(file.name);
+    console.log(`Uploading file: ${encodedFileName}`);
+
+    this._binaryFileClient.getBlobUploadContext(encodedFileName).subscribe(response => {
         this.isLoading = true;
         this.uploadBlob(response.sasUri!, file);
         this.openSnackBar(`Successfully uploaded "${file.name}"`, 'dismiss');

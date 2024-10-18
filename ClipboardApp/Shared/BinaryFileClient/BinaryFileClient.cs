@@ -74,7 +74,8 @@ public class BinaryFileClient : IBinaryFileClient
             BlobContainerName = _containerClient!.Name,
             BlobName = fileName,
             Resource = "b",
-            ExpiresOn = expiresOn
+            StartsOn = DateTimeOffset.UtcNow,
+            ExpiresOn = expiresOn,
         };
 
         sasBuilder.SetPermissions(permission);
